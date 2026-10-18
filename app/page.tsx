@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { GoogleGenAI } from "@google/genai";
 
 export default function Home() {
@@ -10,27 +10,35 @@ export default function Home() {
   const [result, setResult] = useState<any>(null);
 
   // Convert uploaded file to base64
-  const fileToGenerativePart = (file: File): Promise<{ base64Data: string; mimeType: string }> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        const base64Data = base64String.split(",")[1];
-        let mimeType = file.type;
-        if (!mimeType) {
-          mimeType = file.name.endsWith(".pdf") ? "application/pdf" : "image/jpeg";
-        }
-        resolve({ base64Data, mimeType });
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  const fileToGenerativePart = async (file: File) => {
+    return new Promise<{ inlineData: { data: string; mimeType: string } }>(
+      (resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+          const base64Data = base64String.split(",")[1];
+          let mimeType = file.type;
+          if (!mimeType) {
+            mimeType = file.name.endsWith(".pdf")
+              ? "application/pdf"
+              : "image/jpeg";
+          }
+          resolve({
+            inlineData: {
+              data: base64Data,
+              mimeType: mimeType,
+            },
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !description) {
-      alert("Proof file aur Description dono mandatory hain!");
+    if (!description && !file) {
+      alert("Kripya samasya ka vivran dein ya koi document/photo upload karein.");
       return;
     }
 
@@ -38,100 +46,95 @@ export default function Home() {
     setResult(null);
 
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AQ.Ab8RN6LRq5nc_86bVFCXkeYtt7uTLaDWGwT5YMnu-3dWOPwEVw";
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("API Key missing hai.");
+      }
+
       const ai = new GoogleGenAI({ apiKey });
-
-      const { base64Data, mimeType } = await fileToGenerativePart(file);
-
       const prompt = `
-You are JanSatyamev AI, an advanced proof-based public grievance and accountability platform.
-Analyze the user's grievance description and the uploaded proof document.
+Aap JanSatyamev AI ke official Legal Audit Engine hain.
+User ki samasya: "${description}"
 
-User Grievance Description: "${description}"
+Kripya niche दिए गए JSON format me hi jawab dein:
+{
+  "category": "Grievance Category",
+  "validProof": true or false,
+  "proofAuditNotes": "Evidence verification summary",
+  "targetAuthority": "Responsible Government Department",
+  "legalDraft": "Formal official complaint draft letter in Hindi/English."
+}
+`;
 
-Perform the following tasks and return the response strictly in JSON format with these exact keys:
-1. "isValidProof": true or false
-2. "proofAuditNotes": "A short sentence explaining your audit observation of the uploaded proof."
-3. "category": "The precise public/legal category (e.g., Police Misconduct, Corruption, Revenue/Land Fraud, Municipal Negligence, etc.)"
-4. "targetAuthority": "The exact government authority or office to route this complaint to (e.g., Superintendent of Police, State Vigilance Bureau, District Collector, etc.)"
-5. "legalDraft": "A formal legal complaint letter addressed to the target authority, citing relevant Bharatiya Nyaya Sanhita (BNS) or statutory provisions."
+      const contents: any[] = [prompt];
+      if (file) {
+        const imagePart = await fileToGenerativePart(file);
+        contents.push(imagePart);
+      }
 
-Return ONLY valid JSON.
-      `;
-
-      // Updated model name as instructed by Google API response
       const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType: mimeType,
-                  data: base64Data
-                }
-              }
-            ]
-          }
-        ]
+        model: "gemini-2.5-flash",
+        contents: contents,
       });
 
       const responseText = response.text || "";
-      let cleanJsonText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-      
-      const parsedResult = JSON.parse(cleanJsonText);
-      setResult(parsedResult);
-    } catch (error: any) {
-      console.error("Gemini API Error Detail:", error);
-      alert("Error: " + (error?.message || "Processing me issue aaya. Check console."));
+      const cleanedJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+      const parsedData = JSON.parse(cleanedJson);
+
+      setResult(parsedData);
+    } catch (err: any) {
+      console.error(err);
+      alert("Error: " + (err.message || "AI Analysis me koi samasya aayi."));
     } finally {
       setLoading(false);
     }
   };
 
+  const handlePayment = (plan: string, amount: number) => {
+    alert(`Aapne ${plan} plan (₹${amount}) chuna hai. Razorpay Payment Gateway connect hone par instant UPI/QR code payment khulega.`);
+  };
+
   return (
-    <main style={{ minHeight: "100vh", backgroundColor: "#0f172a", color: "#ffffff", padding: "2rem", fontFamily: "sans-serif" }}>
-      <div style={{ maxWidth: "700px", margin: "0 auto" }}>
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 font-sans">
+      <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <span style={{ backgroundColor: "rgba(37, 99, 235, 0.2)", color: "#60a5fa", padding: "6px 16px", borderRadius: "20px", fontSize: "14px", fontWeight: "bold" }}>
-            🛡️ Live Gemini AI Public Accountability Portal
-          </span>
-          <h1 style={{ fontSize: "2.5rem", marginTop: "1rem", marginBottom: "0.5rem" }}>JanSatyamev AI</h1>
-          <p style={{ color: "#94a3b8" }}>Multi-Page Document & Image Forensic Proof Audit System</p>
-        </div>
+        <header className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 bg-blue-950/60 border border-blue-800/50 px-4 py-1.5 rounded-full text-xs font-semibold text-blue-300">
+            🛡️ Verified Public Accountability Platform
+          </div>
+          <h1 className="text-3xl md:text-5xl font-extrabold text-blue-500 tracking-tight">
+            JanSatyamev AI
+          </h1>
+          <p className="text-slate-400 text-sm md:text-base">
+            Multi-Page Document & Image Forensic Proof Audit System
+          </p>
+        </header>
 
-        {/* Complaint Form */}
-        <form onSubmit={handleSubmit} style={{ backgroundColor: "#1e293b", padding: "2rem", borderRadius: "16px", border: "1px solid #334155" }}>
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "bold" }}>
+        {/* Input Form */}
+        <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-300">
               1. Apni Samasya Detail Me Likhein / Problem Description:
             </label>
             <textarea
-              required
-              rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Kya hua? Kis official ya department ne galat kiya, details likhein..."
-              style={{ width: "100%", backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "8px", padding: "12px", color: "#fff", boxSizing: "border-box" }}
+              className="w-full h-32 bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-200"
             />
           </div>
 
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "bold" }}>
+          <div>
+            <label className="block text-sm font-medium mb-2 text-slate-300">
               2. Upload Mandatory Proof (Photo / Screenshot / PDF):
             </label>
             <input
               type="file"
-              accept="image/*,application/pdf"
-              required
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              style={{ width: "100%", backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "8px", padding: "10px", color: "#cbd5e1" }}
+              onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
+              className="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
             />
-            <p style={{ color: "#fbbf24", fontSize: "12px", marginTop: "6px" }}>
+            <p className="text-xs text-slate-500 mt-2">
               📄 Supported formats: Photos (JPG, PNG) & PDF Documents.
             </p>
           </div>
@@ -139,40 +142,96 @@ Return ONLY valid JSON.
           <button
             type="submit"
             disabled={loading}
-            style={{ width: "100%", backgroundColor: "#2563eb", color: "#fff", border: "none", padding: "14px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "16px" }}
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition duration-200 shadow-lg disabled:opacity-50"
           >
-            {loading ? "Gemini AI Document Forensic Audit Chal Raha Hai..." : "Submit & Verify with Gemini AI"}
+            {loading ? "AI Forensic Audit Progressing..." : "Submit & Verify with JanSatyamev AI"}
           </button>
         </form>
 
-        {/* AI Output Report */}
+        {/* AI Result Section */}
         {result && (
-          <div style={{ marginTop: "2rem", backgroundColor: "#1e293b", padding: "1.5rem", borderRadius: "16px", border: "1px solid #334155" }}>
-            <h2 style={{ color: "#4ade80", marginTop: 0 }}>📄 Gemini AI Forensic Audit Report</h2>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
-              <div style={{ backgroundColor: "#0f172a", padding: "1rem", borderRadius: "8px" }}>
-                <span style={{ fontSize: "12px", color: "#94a3b8", display: "block" }}>PROOF STATUS</span>
-                <span style={{ color: "#4ade80", fontWeight: "bold" }}>{result.isValidProof ? "✓ VALID PROOF VERIFIED" : "❌ INVALID PROOF"}</span>
-                <p style={{ fontSize: "12px", color: "#cbd5e1", marginTop: "4px" }}>{result.proofAuditNotes}</p>
-              </div>
-
-              <div style={{ backgroundColor: "#0f172a", padding: "1rem", borderRadius: "8px" }}>
-                <span style={{ fontSize: "12px", color: "#94a3b8", display: "block" }}>TARGET AUTHORITY</span>
-                <span style={{ color: "#60a5fa", fontWeight: "bold" }}>{result.targetAuthority}</span>
-                <p style={{ fontSize: "12px", color: "#cbd5e1", marginTop: "4px" }}>Category: {result.category}</p>
-              </div>
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+            <h2 className="text-xl font-bold text-blue-400">AI Legal Audit Summary</h2>
+            <div className="text-sm space-y-2 text-slate-300">
+              <p><strong>Category:</strong> {result.category}</p>
+              <p><strong>Target Authority:</strong> {result.targetAuthority}</p>
+              <p><strong>Proof Verified:</strong> {result.validProof ? "Yes" : "No"}</p>
+              <p><strong>Audit Notes:</strong> {result.proofAuditNotes}</p>
             </div>
 
-            <div style={{ backgroundColor: "#0f172a", padding: "1rem", borderRadius: "8px" }}>
-              <span style={{ fontSize: "12px", color: "#94a3b8", display: "block", marginBottom: "6px" }}>AI GENERATED FORMAL LEGAL DRAFT (BNS)</span>
-              <pre style={{ whiteSpace: "pre-wrap", fontSize: "12px", color: "#e2e8f0", fontFamily: "monospace" }}>
+            <div className="pt-4 border-t border-slate-800">
+              <h3 className="text-md font-semibold text-slate-200 mb-2">Formal Complaint Draft:</h3>
+              <div className="bg-slate-950 p-4 rounded-xl text-xs font-mono text-slate-300 whitespace-pre-wrap border border-slate-800 max-h-60 overflow-y-auto">
                 {result.legalDraft}
-              </pre>
+              </div>
             </div>
           </div>
         )}
+
+        {/* Monetization / Pricing Plans Section */}
+        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-white">Services & Pricing Plans</h2>
+            <p className="text-slate-400 text-xs mt-1">Get instant AI Drafts, Verified Legal Audits, or Consult Legal Experts</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Basic Plan */}
+            <div className="border border-slate-800 bg-slate-950 p-5 rounded-xl space-y-3">
+              <h3 className="font-semibold text-blue-400">Basic AI Draft Pass</h3>
+              <p className="text-2xl font-bold text-white">₹49 <span className="text-xs text-slate-500 font-normal">/ draft</span></p>
+              <ul className="text-xs text-slate-400 space-y-1">
+                <li>• Instant Complaint Generation</li>
+                <li>• Standard Department Targeting</li>
+                <li>• Downloadable Text Draft</li>
+              </ul>
+              <button
+                onClick={() => handlePayment("Basic Pass", 49)}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs font-semibold py-2 rounded-lg border border-blue-500/30 transition"
+              >
+                Pay ₹49 with UPI
+              </button>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="border border-blue-500/50 bg-slate-950 p-5 rounded-xl space-y-3 relative">
+              <span className="absolute -top-3 right-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">POPULAR</span>
+              <h3 className="font-semibold text-blue-400">Full Legal Audit & Notice</h3>
+              <p className="text-2xl font-bold text-white">₹85 <span className="text-xs text-slate-500 font-normal">/ report</span></p>
+              <ul className="text-xs text-slate-400 space-y-1">
+                <li>• Evidence & Photo AI Audit</li>
+                <li>• Official Format PDF Download</li>
+                <li>• Verified Legal Authority Targeting</li>
+              </ul>
+              <button
+                onClick={() => handlePayment("Full Audit Pass", 85)}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2 rounded-lg shadow transition"
+              >
+                Pay ₹85 with UPI
+              </button>
+            </div>
+          </div>
+
+          {/* Advocate Section Info */}
+          <div className="border-t border-slate-800 pt-4 text-center space-y-2">
+            <p className="text-xs text-slate-400">
+              Are you an Advocate? <span className="text-blue-400 font-semibold cursor-pointer">Register on Advocate Directory</span> to offer verified legal help.
+            </p>
+          </div>
+        </section>
+
+        {/* Legal Disclaimer Footer */}
+        <footer className="text-center text-xs text-slate-500 border-t border-slate-800 pt-6 space-y-2">
+          <p>
+            <strong>Disclaimer:</strong> JanSatyamev AI is an AI-powered technology platform for grievance auditing and drafting. It does not provide formal legal advice or representation.
+          </p>
+          <p>
+            <a href="/terms" className="text-blue-400 hover:underline">Terms of Service & Privacy Policy</a> | Technology Platform Fee Applicable.
+          </p>
+          <p className="text-[10px] text-slate-600">© 2026 JanSatyamev AI. All Rights Reserved.</p>
+        </footer>
+
       </div>
-    </main>
+    </div>
   );
 }
