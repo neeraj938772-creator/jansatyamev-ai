@@ -3,13 +3,33 @@
 import React, { useState } from "react";
 import { GoogleGenAI } from "@google/genai";
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 export default function Home() {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  // Convert uploaded file to base64
+  // Load Razorpay Script dynamically
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const fileToGenerativePart = async (file: File) => {
     return new Promise<{ inlineData: { data: string; mimeType: string } }>(
       (resolve) => {
@@ -90,8 +110,40 @@ Kripya niche दिए गए JSON format me hi jawab dein:
     }
   };
 
-  const handlePayment = (plan: string, amount: number) => {
-    alert(`Aapne ${plan} (₹${amount}) chuna hai. Razorpay Payment Gateway active hote hi instant UPI/QR code payment popup khulega.`);
+  const handlePayment = async (planName: string, amountInRupees: number) => {
+    const res = await loadRazorpayScript();
+    if (!res) {
+      alert("Razorpay SDK load nahi ho paaya. Network check karein.");
+      return;
+    }
+
+    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    if (!keyId) {
+      alert("Razorpay Key ID Vercel me configured nahi hai.");
+      return;
+    }
+
+    const options = {
+      key: keyId,
+      amount: amountInRupees * 100, // Amount in paise
+      currency: "INR",
+      name: "JanSatyamev AI",
+      description: `${planName} Subscription`,
+      handler: function (response: any) {
+        alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}`);
+      },
+      prefill: {
+        name: "",
+        email: "",
+        contact: "",
+      },
+      theme: {
+        color: "#2563eb",
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
   };
 
   return (
