@@ -276,7 +276,7 @@ Kripya niche दिए गए JSON format me hi jawab dein:
               <div>
                 <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">EXPERT ASSIST</span>
                 <h3 className="font-semibold text-emerald-400 text-lg">Advocate Review</h3>
-                <p className="text-3xl font-bold text-white mt-1">₹1,499 <span className="text-xs text-slate-500 font-normal">/ case</span></p>
+                <p className="text-3xl font-bold text-white mt-1">₹2,999 <span className="text-xs text-slate-500 font-normal">/ case</span></p>
                 <ul className="text-xs text-slate-400 space-y-2 mt-4">
                   <li>✔ Full AI Legal & Evidence Audit</li>
                   <li>✔ Verified Advocate Case Review</li>
@@ -285,10 +285,10 @@ Kripya niche दिए गए JSON format me hi jawab dein:
                 </ul>
               </div>
               <button
-                onClick={() => handlePayment("Advocate Review Package", 1499)}
+                onClick={() => handlePayment("Advocate Review Package", 2999)}
                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2.5 rounded-lg transition mt-4"
               >
-                Book Advocate Pass ₹1,499
+                Book Advocate Pass ₹2,999
               </button>
             </div>
 
@@ -301,10 +301,10 @@ Kripya niche दिए गए JSON format me hi jawab dein:
               <p className="text-xs text-slate-400">Join the JanSatyamev Advocate Directory to get verified client leads in your city.</p>
             </div>
             <button
-              onClick={() => handlePayment("Advocate Directory Registration", 999)}
+              onClick={() => handlePayment("Advocate Directory Registration", 1999)}
               className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-4 py-2 rounded-lg whitespace-nowrap"
             >
-              Lawyer Pro Listing (₹999/mo)
+              Lawyer Pro Listing (₹1,999/mo)
             </button>
           </div>
         </section>
