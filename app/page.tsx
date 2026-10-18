@@ -91,12 +91,12 @@ Kripya niche दिए गए JSON format me hi jawab dein:
   };
 
   const handlePayment = (plan: string, amount: number) => {
-    alert(`Aapne ${plan} plan (₹${amount}) chuna hai. Razorpay Payment Gateway connect hone par instant UPI/QR code payment khulega.`);
+    alert(`Aapne ${plan} (₹${amount}) chuna hai. Razorpay Payment Gateway active hote hi instant UPI/QR code payment popup khulega.`);
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 font-sans">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto space-y-8">
         
         {/* Header */}
         <header className="text-center space-y-2">
@@ -168,62 +168,99 @@ Kripya niche दिए गए JSON format me hi jawab dein:
           </div>
         )}
 
-        {/* Monetization / Pricing Plans Section */}
+        {/* Advanced Monetization & Subscription Tiers */}
         <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-white">Services & Pricing Plans</h2>
-            <p className="text-slate-400 text-xs mt-1">Get instant AI Drafts, Verified Legal Audits, or Consult Legal Experts</p>
+            <h2 className="text-2xl font-bold text-white">Choose Your Legal Access Plan</h2>
+            <p className="text-slate-400 text-xs mt-1">Instant AI Drafts, Monthly Subscriptions, & Verified Lawyer Consultations</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Basic Plan */}
-            <div className="border border-slate-800 bg-slate-950 p-5 rounded-xl space-y-3">
-              <h3 className="font-semibold text-blue-400">Basic AI Draft Pass</h3>
-              <p className="text-2xl font-bold text-white">₹49 <span className="text-xs text-slate-500 font-normal">/ draft</span></p>
-              <ul className="text-xs text-slate-400 space-y-1">
-                <li>• Instant Complaint Generation</li>
-                <li>• Standard Department Targeting</li>
-                <li>• Downloadable Text Draft</li>
-              </ul>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Tier 1: Single Pass */}
+            <div className="border border-slate-800 bg-slate-950 p-5 rounded-xl space-y-3 flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">MICRO PASS</span>
+                <h3 className="font-semibold text-blue-400 text-lg">Single AI Audit</h3>
+                <p className="text-3xl font-bold text-white mt-1">₹49 <span className="text-xs text-slate-500 font-normal">/ one-time</span></p>
+                <ul className="text-xs text-slate-400 space-y-2 mt-4">
+                  <li>✔ 1 Instant AI Complaint Draft</li>
+                  <li>✔ Target Department Identified</li>
+                  <li>✔ Web Copy Text Draft</li>
+                </ul>
+              </div>
               <button
-                onClick={() => handlePayment("Basic Pass", 49)}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs font-semibold py-2 rounded-lg border border-blue-500/30 transition"
+                onClick={() => handlePayment("Single Pass", 49)}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 text-xs font-semibold py-2.5 rounded-lg border border-blue-500/30 transition mt-4"
               >
-                Pay ₹49 with UPI
+                Buy ₹49 Pass
               </button>
             </div>
 
-            {/* Pro Plan */}
-            <div className="border border-blue-500/50 bg-slate-950 p-5 rounded-xl space-y-3 relative">
-              <span className="absolute -top-3 right-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">POPULAR</span>
-              <h3 className="font-semibold text-blue-400">Full Legal Audit & Notice</h3>
-              <p className="text-2xl font-bold text-white">₹85 <span className="text-xs text-slate-500 font-normal">/ report</span></p>
-              <ul className="text-xs text-slate-400 space-y-1">
-                <li>• Evidence & Photo AI Audit</li>
-                <li>• Official Format PDF Download</li>
-                <li>• Verified Legal Authority Targeting</li>
-              </ul>
+            {/* Tier 2: Monthly Citizen Shield */}
+            <div className="border border-blue-500/50 bg-slate-950 p-5 rounded-xl space-y-3 relative flex flex-col justify-between shadow-lg shadow-blue-950/50">
+              <span className="absolute -top-3 right-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">MOST POPULAR</span>
+              <div>
+                <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider">MONTHLY PLAN</span>
+                <h3 className="font-semibold text-blue-400 text-lg">Citizen Shield Pass</h3>
+                <p className="text-3xl font-bold text-white mt-1">₹499 <span className="text-xs text-slate-500 font-normal">/ month</span></p>
+                <ul className="text-xs text-slate-400 space-y-2 mt-4">
+                  <li>✔ 10 Official AI Legal Drafts & RTIs</li>
+                  <li>✔ High-Resolution PDF Downloads</li>
+                  <li>✔ Priority AI Forensic Proof Audit</li>
+                  <li>✔ Relevant IPC & BNS Legal Sections</li>
+                </ul>
+              </div>
               <button
-                onClick={() => handlePayment("Full Audit Pass", 85)}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2 rounded-lg shadow transition"
+                onClick={() => handlePayment("Citizen Shield Monthly Plan", 499)}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2.5 rounded-lg shadow transition mt-4"
               >
-                Pay ₹85 with UPI
+                Subscribe ₹499/Mo
               </button>
             </div>
+
+            {/* Tier 3: Advocate Consultation + Full Audit */}
+            <div className="border border-emerald-500/40 bg-slate-950 p-5 rounded-xl space-y-3 flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">EXPERT ASSIST</span>
+                <h3 className="font-semibold text-emerald-400 text-lg">Advocate Review</h3>
+                <p className="text-3xl font-bold text-white mt-1">₹1,499 <span className="text-xs text-slate-500 font-normal">/ case</span></p>
+                <ul className="text-xs text-slate-400 space-y-2 mt-4">
+                  <li>✔ Full AI Legal & Evidence Audit</li>
+                  <li>✔ Verified Advocate Case Review</li>
+                  <li>✔ 15-Min Lawyer Tele-Consultation</li>
+                  <li>✔ Stamped Legal Notice Format</li>
+                </ul>
+              </div>
+              <button
+                onClick={() => handlePayment("Advocate Review Package", 1499)}
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2.5 rounded-lg transition mt-4"
+              >
+                Book Advocate Pass ₹1,499
+              </button>
+            </div>
+
           </div>
 
-          {/* Advocate Section Info */}
-          <div className="border-t border-slate-800 pt-4 text-center space-y-2">
-            <p className="text-xs text-slate-400">
-              Are you an Advocate? <span className="text-blue-400 font-semibold cursor-pointer">Register on Advocate Directory</span> to offer verified legal help.
-            </p>
+          {/* Advocate B2B Directory Pricing */}
+          <div className="border-t border-slate-800 pt-6 mt-6 bg-slate-950 p-4 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h4 className="font-semibold text-white text-sm">Are you a Practicing Advocate?</h4>
+              <p className="text-xs text-slate-400">Join the JanSatyamev Advocate Directory to get verified client leads in your city.</p>
+            </div>
+            <button
+              onClick={() => handlePayment("Advocate Directory Registration", 999)}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-4 py-2 rounded-lg whitespace-nowrap"
+            >
+              Lawyer Pro Listing (₹999/mo)
+            </button>
           </div>
         </section>
 
         {/* Legal Disclaimer Footer */}
         <footer className="text-center text-xs text-slate-500 border-t border-slate-800 pt-6 space-y-2">
           <p>
-            <strong>Disclaimer:</strong> JanSatyamev AI is an AI-powered technology platform for grievance auditing and drafting. It does not provide formal legal advice or representation.
+            <strong>Disclaimer:</strong> JanSatyamev AI is an AI-powered legal technology platform. It provides automated drafting assistance and non-binding legal information in compliance with Bar Council of India guidelines.
           </p>
           <p>
             <a href="/terms" className="text-blue-400 hover:underline">Terms of Service & Privacy Policy</a> | Technology Platform Fee Applicable.
