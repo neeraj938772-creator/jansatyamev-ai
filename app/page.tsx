@@ -146,6 +146,65 @@ Kripya niche दिए गए JSON format me hi jawab dein:
     paymentObject.open();
   };
 
+  const handleDownloadPDF = () => {
+    if (!result) return;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Official Legal Complaint - JanSatyamev AI</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+            .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 25px; }
+            .header h1 { color: #1e3a8a; margin: 0; font-size: 24px; }
+            .header p { color: #64748b; font-size: 12px; margin: 5px 0 0 0; }
+            .section { margin-bottom: 20px; }
+            .section-title { font-weight: bold; color: #2563eb; font-size: 14px; text-transform: uppercase; margin-bottom: 5px; }
+            .box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; rounded: 8px; font-size: 13px; }
+            .draft-box { white-space: pre-wrap; font-family: monospace; font-size: 12px; background: #fafafa; border: 1px solid #cbd5e1; padding: 15px; }
+            .footer { margin-top: 40px; border-top: 1px solid #e2e8f0; pt: 15px; text-align: center; font-size: 10px; color: #94a3b8; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>JAN SATYAMEV AI - LEGAL DRAFT REPORT</h1>
+            <p>Verified Public Grievance Audit & Official Notice Document</p>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Case Overview</div>
+            <div class="box">
+              <p><strong>Category:</strong> ${result.category}</p>
+              <p><strong>Target Authority:</strong> ${result.targetAuthority}</p>
+              <p><strong>Proof Status:</strong> ${result.validProof ? "Verified Evidence Attached" : "Self-Declared Description"}</p>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Forensic Audit Summary</div>
+            <div class="box">${result.proofAuditNotes}</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Formal Complaint Draft Letter</div>
+            <div class="draft-box">${result.legalDraft}</div>
+          </div>
+
+          <div class="footer">
+            Generated via JanSatyamev AI Public Accountability Platform | Compliance with Bar Council Guidelines.
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 font-sans">
       <div className="max-w-5xl mx-auto space-y-8">
@@ -203,7 +262,16 @@ Kripya niche दिए गए JSON format me hi jawab dein:
         {/* AI Result Section */}
         {result && (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h2 className="text-xl font-bold text-blue-400">AI Legal Audit Summary</h2>
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+              <h2 className="text-xl font-bold text-blue-400">AI Legal Audit Summary</h2>
+              <button
+                onClick={handleDownloadPDF}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow transition flex items-center gap-1"
+              >
+                📥 Download Official PDF
+              </button>
+            </div>
+
             <div className="text-sm space-y-2 text-slate-300">
               <p><strong>Category:</strong> {result.category}</p>
               <p><strong>Target Authority:</strong> {result.targetAuthority}</p>
