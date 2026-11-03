@@ -1,3 +1,4 @@
+import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -6,34 +7,27 @@ export async function POST(request: Request) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: "API key not configured in environment variables." }, { status: 500 });
+      return NextResponse.json({ error: "API key not configured." }, { status: 500 });
     }
 
-    // Yahan humne v1 endpoint aur gemini-1.5-flash set kiya hai jo official aur stable hai
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }],
-            },
-          ],
-        }),
-      }
-    );
+    // Official SDK ka use jo model name aur version ko khud handle karta hai
+    const ai = new GoogleGenAI({ apiKey });
+    
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: prompt,
+    });
 
-    const data = await response.json();
+    return NextResponse.json({
+      candidates: [
+        {
+          content: {
+            parts: [{ text: response.text }]
+          }
+        }
+      ]
+    });
 
-    if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
-    }
-
-    return NextResponse.json(data);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
