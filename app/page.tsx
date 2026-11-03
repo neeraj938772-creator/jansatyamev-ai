@@ -36,7 +36,8 @@ export default function JanSatyamevHomePage() {
         return;
       }
 
-      const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+      // Yahan humne response ke sabhi formats ko handle kar liya hai taaki text pakka dikhe
+      const generatedText = data.text || data.candidates?.[0]?.content?.parts?.[0]?.text || data.response || "No response generated.";
       setAuditResult(generatedText);
     } catch (err: any) {
       alert(`Network error: ${err.message}`);
