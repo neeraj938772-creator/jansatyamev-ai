@@ -9,9 +9,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "API key not configured in environment variables." }, { status: 500 });
     }
 
-    // Yahan humne naya aur sahi model name set kar diya hai
+    // Humne yahan model ko gemini-pro kar diya hai jo bilkul stable hai
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: {
