@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: "API key not configured." }, { status: 500 });
+      return NextResponse.json({ text: "Error: API key not configured in environment variables." }, { status: 500 });
     }
 
     const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
@@ -18,9 +18,22 @@ export async function POST(request: Request) {
     });
 
     const data = await apiRes.json();
-    return NextResponse.json(data);
+
+    // Agar Google API se koi error aaya ho toh use text ke roop mein dikhayein
+    if (!apiRes.ok) {
+      return NextResponse.json({ text: `API Error: ${JSON.stringify(data)}` });
+    }
+
+    // Gemini API ke alag-alag response formats ko handle karne ke liye safe logic
+    const extractedText = 
+      data.candidates?.[0]?.content?.parts?.[0]?.text || 
+      data.candidates?.[0]?.output || 
+      data.text || 
+      JSON.stringify(data);
+
+    return NextResponse.json({ text: extractedText });
 
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ text: `Server Error: ${err.message}` }, { status: 500 });
   }
 }
